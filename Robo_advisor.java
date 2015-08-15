@@ -1,8 +1,11 @@
 package robo;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.nio.file.*;
 import java.awt.EventQueue;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -11,6 +14,8 @@ import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -27,6 +32,16 @@ import javax.swing.JMenuItem;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
+import org.eclipse.osgi.internal.loader.FragmentLoader;
+import org.eclipse.ui.internal.handlers.WizardHandler.Import;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.data.general.Dataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.ui.RefineryUtilities;
+import org.jfree.util.Rotation;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -36,12 +51,18 @@ import com.ibm.icu.math.BigDecimal;
 import com.ibm.icu.text.DecimalFormat;
 
 import java.awt.Choice;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.jar.JarException;
+import java.awt.FlowLayout;
 
 public class Robo_advisor extends JFrame {
 	
+	DecimalFormat df = new DecimalFormat("#.##");
 	private JPanel contentPane;
 	private JTextField txtHowManyYears;
 	private JTextField txtAreYouMale;
@@ -98,11 +119,11 @@ public class Robo_advisor extends JFrame {
 	private JTextField txtPrice_2;
 	private JTextField txtPrice_3;
 	private JTextField txtPrice_4;
-	private JTextField txtChange;
-	private JTextField textField;
-	private JTextField textField_2;
-	private JTextField textField_3;
-	private JTextField textField_4;
+	private JTextField textChangeOne;
+	private JTextField textChangeTwo;
+	private JTextField textChangeThree;
+	private JTextField textChangeFour;
+	private JTextField textChangeFive;
 	private JTextField leftOver;
 	private JTextField leftMoney;
 	private JTextField sharesOne;
@@ -115,6 +136,8 @@ public class Robo_advisor extends JFrame {
 	private JTextField shareNum3;
 	private JTextField shareNum4;
 	private JTextField shareNum5;
+	private JTextField txtCash;
+	private JTextField textCash;
 
 	/**
 	 * Launch the application.
@@ -136,8 +159,11 @@ public class Robo_advisor extends JFrame {
 	 * Create the frame.
 	 * @throws Exception 
 	 */
-	public Robo_advisor() throws Exception {
+	public Robo_advisor() throws Exception, EOFException {
 		
+		
+		ArrayList<JTextField> theShares = new ArrayList<JTextField>();
+	
 		String urlFoundation = "http://www.google.com/finance/info?q=NSE:";
 		String values = GetRequest.sendGet(urlFoundation+"VNQ");
 		System.out.println(values);
@@ -148,36 +174,53 @@ public class Robo_advisor extends JFrame {
 		System.out.println(top);
 		//if  doesn't exist, create the file and add a users array with nothing in it
 		
-		//ArrayList<Person> users = Save.loadPeople();
-		ArrayList<Person> users = new ArrayList<Person>();
+		File file = new File("people.ser");
+		file.createNewFile();
+		Person p = new Person();
 		
+		
+		ArrayList<Person> users = Save.loadPeople();
+		if (users.size()==0) {
+			users.add(p);
+		}
+		
+	 		
+		//try this stuff
+		
+	    
+	    
+	    
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 542, 404);
+		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(new CardLayout(0, 0));
-		setBounds(100, 100, 504, 400);
+		setBounds(100, 100, 600, 430);
 		JPanel home = new JPanel();
 		contentPane.add(home, "name_158080467540752");
 		HashMap<String, Person> people = new HashMap<String,Person>();
+		for (int i = 0; i < users.size(); i++) {
+			people.put(users.get(i).getName(), users.get(i));
+		}
 		home.setLayout(null);
-	
 		
 		Choice choice = new Choice();
 		choice.setBounds(359, 11, 82, 20);
 		home.add(choice);
 		for (int i = 0; i < users.size(); i++) {
-			choice.add(users.get(i).getName());
+			if (users.get(i).getName()!=null) {
+				choice.add(users.get(i).getName());
+			}
+			
 		}
-		
-		
 		
 		txtUser = new JTextField();
 		txtUser.setBounds(273, 12, 68, 20);
 		txtUser.setText("User:");
 		home.add(txtUser);
 		txtUser.setColumns(10);
+		
 		
 	
 		
@@ -201,7 +244,7 @@ public class Robo_advisor extends JFrame {
 		
 		
 		JButton quizButton = new JButton("Take the Quiz!!");
-		quizButton.setBounds(348, 280, 120, 23);
+		quizButton.setBounds(416, 328, 120, 23);
 		quizButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				contentPane.removeAll();
@@ -286,6 +329,11 @@ public class Robo_advisor extends JFrame {
 		underFifteen.setBounds(266, 467, 126, 23);
 		Quiz.add(underFifteen);
 		
+		JPanel tryThis = new JPanel();
+		tryThis.setBounds(0, 46, 294, 271);
+		home.add(tryThis);
+		tryThis.setLayout(null);
+		
 		JRadioButton underTwenty = new JRadioButton("less than 20 years");
 		buttonGroup_2.add(underTwenty);
 		underTwenty.setBounds(266, 493, 126, 23);
@@ -339,7 +387,7 @@ public class Robo_advisor extends JFrame {
 				System.out.println(people.get(theUser.getText()).getName());
 				contentPane.remove(Quiz);
 				contentPane.add(home);
-				setBounds(100, 100, 504, 400);
+				setBounds(100, 100, 600, 430);
 				home.setVisible(true);
 				
 				System.out.println(people.get(theUser.getText()).getName());
@@ -446,7 +494,7 @@ public class Robo_advisor extends JFrame {
 				newUser.setVisible(true);
 				contentPane.removeAll();
 				contentPane.add(newUser);
-				
+				Save.savePeople(users);
 			}
 		});
 		btnSubmit.setBounds(398, 636, 80, 23);
@@ -508,18 +556,27 @@ public class Robo_advisor extends JFrame {
 		JButton btnSubmit_1 = new JButton("Submit");
 		btnSubmit_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				ArrayList<JTextField> allHomeFields = new ArrayList<JTextField>();
+				allHomeFields.addAll(Arrays.asList(netWorth, indexOne, indexTwo, indexThree, indexFour, indexFive, textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive,shareNum,shareNum2,shareNum3,shareNum4,shareNum5,txtPrice,txtPrice_1,txtPrice_2,txtPrice_3,txtPrice_4,totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+				
 				Person user = new Person();
 				user.setName(newNameField.getText());
 				user.setEmail(emailField.getText());
 				users.add(user);
 				choice.add(user.getName());
+				choice.select(user.getName());
 				people.put(user.getName(),user);
-			
 				
-				
+				for (int i = 0; i < allHomeFields.size(); i++) {
+					allHomeFields.get(i).setText("0");
+				}
 				contentPane.removeAll();
+				tryThis.setVisible(false);
+				
 				contentPane.add(home);
 				home.setVisible(true);
+				
+				
 			}
 		});
 		btnSubmit_1.setBounds(311, 150, 89, 23);
@@ -562,28 +619,28 @@ public class Robo_advisor extends JFrame {
 		tradeCost.setColumns(10);
 		
 		addMoneyOne = new JTextField();
-		addMoneyOne.setBounds(201, 72, 78, 20);
+		addMoneyOne.setBounds(169, 72, 78, 20);
 		addMoney.add(addMoneyOne);
 		addMoneyOne.setColumns(10);
 		
 		addMoneyTwo = new JTextField();
 		addMoneyTwo.setColumns(10);
-		addMoneyTwo.setBounds(201, 102, 78, 20);
+		addMoneyTwo.setBounds(169, 102, 78, 20);
 		addMoney.add(addMoneyTwo);
 		
 		addMoneyThree = new JTextField();
 		addMoneyThree.setColumns(10);
-		addMoneyThree.setBounds(201, 133, 78, 20);
+		addMoneyThree.setBounds(169, 133, 78, 20);
 		addMoney.add(addMoneyThree);
 		
 		addMoneyFive = new JTextField();
 		addMoneyFive.setColumns(10);
-		addMoneyFive.setBounds(201, 195, 78, 20);
+		addMoneyFive.setBounds(169, 195, 78, 20);
 		addMoney.add(addMoneyFive);
 		
 		addMoneyFour = new JTextField();
 		addMoneyFour.setColumns(10);
-		addMoneyFour.setBounds(201, 164, 78, 20);
+		addMoneyFour.setBounds(169, 164, 78, 20);
 		addMoney.add(addMoneyFour);
 		
 		JButton btnSubmit_2 = new JButton("Submit");
@@ -617,6 +674,7 @@ public class Robo_advisor extends JFrame {
 					e1.printStackTrace();
 				}				
 				DecimalFormat df = new DecimalFormat("#.####");
+				
 				df.setMinimumIntegerDigits(2);
 				for (int i = 0; i < moneyBoxes.size(); i++) {
 					System.out.println(Double.parseDouble(moneyBox.getText()));
@@ -635,36 +693,44 @@ public class Robo_advisor extends JFrame {
 				for (int j = 0; j < moneyBoxes.size(); j++) {
 					tempTotal += Double.parseDouble(moneyBoxes.get(j).getText());
 				}
+				
+			
+				
+				
+			
 				System.out.println(tempTotal);
 				leftMoney.setText(String.valueOf(df.format((Double.parseDouble((moneyBox.getText()))-costs)-tempTotal)));
+				people.get(userMoney.getText()).setNetWorth(people.get(userMoney.getText()).getNetWorth()+Double.parseDouble(leftMoney.getText()));
+				people.get(userMoney.getText()).setCash(people.get(userMoney.getText()).getCash()+Double.parseDouble(leftMoney.getText()));
+				Save.savePeople(users);
 			}
 		});
 		btnSubmit_2.setBounds(25, 148, 89, 23);
 		addMoney.add(btnSubmit_2);
 		
 		fundOne = new JTextField();
-		fundOne.setBounds(289, 72, 47, 20);
+		fundOne.setBounds(257, 72, 47, 20);
 		addMoney.add(fundOne);
 		fundOne.setColumns(10);
 		
 		fundTwo = new JTextField();
 		fundTwo.setColumns(10);
-		fundTwo.setBounds(289, 102, 47, 20);
+		fundTwo.setBounds(257, 102, 47, 20);
 		addMoney.add(fundTwo);
 		
 		fundThree = new JTextField();
 		fundThree.setColumns(10);
-		fundThree.setBounds(289, 133, 47, 20);
+		fundThree.setBounds(257, 133, 47, 20);
 		addMoney.add(fundThree);
 		
 		fundFour = new JTextField();
 		fundFour.setColumns(10);
-		fundFour.setBounds(289, 164, 47, 20);
+		fundFour.setBounds(257, 164, 47, 20);
 		addMoney.add(fundFour);
 		
 		fundFive = new JTextField();
 		fundFive.setColumns(10);
-		fundFive.setBounds(289, 195, 47, 20);
+		fundFive.setBounds(257, 195, 47, 20);
 		addMoney.add(fundFive);
 		
 		JButton btnReturn = new JButton("Save and return");
@@ -683,7 +749,7 @@ public class Robo_advisor extends JFrame {
 				contentPane.add(home);
 				home.setVisible(true);
 				addMoney.setVisible(false);
-				setBounds(100, 100, 542, 404);
+				setBounds(100, 100, 600, 430);
 				/*for (int i = 0; i < allMoney.size(); i++) {
 					allMoney.get(i).setText(String.valueOf(Double.parseDouble(allMoney.get(i).getText())+Double.parseDouble(moneyBoxesTwo.get(i).getText())));
 				}*/
@@ -709,11 +775,12 @@ public class Robo_advisor extends JFrame {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}		
-			
-				
+				ArrayList<JTextField> alloftheShares = new ArrayList<JTextField>();
+				alloftheShares.addAll(Arrays.asList(shareNum,shareNum2,shareNum3,shareNum4,shareNum5));
 				
 				for (int i = 0; i < shareAll.size(); i++) {
-					shareMap.put(fundNames.get(i).getText(), Integer.parseInt(shareNum.getText()));
+					System.out.println(alloftheShares.get(i).getText());
+					shareMap.put(fundNames.get(i).getText(), Integer.parseInt(alloftheShares.get(i).getText()));
 				}
 				
 				for (int i = 0; i < shareAll.size(); i++) {
@@ -729,21 +796,93 @@ public class Robo_advisor extends JFrame {
 				netWorth.setText(String.valueOf(Double.parseDouble(netWorth.getText())+moneyTotal+Double.parseDouble(leftMoney.getText())));
 				people.get(choice.getSelectedItem()).setNetWorth(Double.parseDouble(netWorth.getText()));
 				people.get(choice.getSelectedItem()).setShares(shareMap);
+				Save.savePeople(users);
+				choice.select(people.get(choice.getSelectedItem()).getName());
+				
+				if (people.get(choice.getSelectedItem()).getName()!=null) {
+					
+					
+					double stockValue = 0;
+					ArrayList<String> symbols1 = people.get(choice.getSelectedItem()).getRiskLevel().getFunds();
+					ArrayList<Float> prices1 = new ArrayList<Float>();
+					ArrayList<Float> priceQuote = new ArrayList<Float>();
+					ArrayList<JTextField> alloftheShares1 = new ArrayList<JTextField>();
+					ArrayList<JTextField> etfPrice = new ArrayList<JTextField>();
+					ArrayList<JTextField> priceChange = new ArrayList<JTextField>();
+					ArrayList<JTextField> theMoneyBoxes = new ArrayList<JTextField>();
+					theMoneyBoxes.addAll(Arrays.asList(totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+					etfPrice.addAll(Arrays.asList(txtPrice,txtPrice_1,txtPrice_2,txtPrice_3,txtPrice_4));
+					alloftheShares1.addAll(Arrays.asList(shareNum,shareNum2,shareNum3,shareNum4,shareNum5));
+					priceChange.addAll(Arrays.asList(textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive));
+					try {
+						for (int i = 0; i < symbols1.size(); i++) {
+							values = GetRequest.sendGet(urlFoundation+symbols1.get(i));
+							float sharePrice = Decode.getPrice(urlFoundation+symbols1.get(i));
+							float shareChange = Decode.getChange(urlFoundation+symbols1.get(i));
+							prices1.add(sharePrice);
+							priceQuote.add(shareChange);
+						}
+						for (int i = 0; i < etfPrice.size(); i++) {
+							etfPrice.get(i).setText(prices1.get(i).toString());
+							priceChange.get(i).setText(priceQuote.get(i).toString());
+							theMoneyBoxes.get(i).setText(String.valueOf(Float.parseFloat(etfPrice.get(i).getText())*Integer.parseInt(alloftheShares1.get(i).getText())));
+							stockValue += Double.parseDouble(theMoneyBoxes.get(i).getText());
+						}
+						System.out.println(stockValue+people.get(choice.getSelectedItem()).getNetWorth());
+						if (people.get(choice.getSelectedItem()).getCash()==null) {
+							people.get(choice.getSelectedItem()).setCash(0.0);
+						}
+						netWorth.setText(String.valueOf(stockValue+people.get(choice.getSelectedItem()).getCash()));
+					} catch (Exception e1) {
+						
+						e1.printStackTrace();
+					}			
+					ArrayList<JTextField> fundNamesTwo = new ArrayList<JTextField>();
+					ArrayList<JTextField> theMoneyBoxesThree = new ArrayList<JTextField>();
+					fundNamesTwo.addAll(Arrays.asList(indexOne,indexTwo,indexThree,indexFour,indexFive));
+					theMoneyBoxesThree.addAll(Arrays.asList(totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+					
+					
+					tryThis.removeAll();
+					tryThis.setVisible(false);
+					DefaultPieDataset dataset = new DefaultPieDataset( );
+					for (int i = 0; i < theMoneyBoxes.size(); i++) {
+						dataset.setValue(fundNamesTwo.get(i).getText(), new Double(Double.parseDouble(theMoneyBoxes.get(i).getText())));
+					}
+					
+				    JFreeChart chart = ChartFactory.createPieChart3D(      
+				            "Asset Distribution",   
+				            dataset,            
+				            true,             
+				            true, 
+				            false);
+				    
+				    PiePlot3D plot = (PiePlot3D) chart.getPlot();
+				    plot.setStartAngle(290);
+				    plot.setDirection(Rotation.CLOCKWISE);
+				    plot.setForegroundAlpha(0.5f);
+				    plot.setNoDataMessage("No data to display");
+					ChartPanel pie = new ChartPanel(chart);
+					pie.setBounds(0, 0, 293, 272);
+					tryThis.add(pie);
+					tryThis.setVisible(true);
+					
+					}
 			}
 		});
-		btnReturn.setBounds(367, 194, 111, 23);
+		btnReturn.setBounds(339, 194, 111, 23);
 		addMoney.add(btnReturn);
 		
 		txtTransactionCosts = new JTextField();
 		txtTransactionCosts.setEditable(false);
 		txtTransactionCosts.setText("Transaction costs:");
-		txtTransactionCosts.setBounds(367, 72, 111, 20);
+		txtTransactionCosts.setBounds(339, 72, 111, 20);
 		addMoney.add(txtTransactionCosts);
 		txtTransactionCosts.setColumns(10);
 		
 		transactionCost = new JTextField();
 		transactionCost.setEditable(false);
-		transactionCost.setBounds(370, 102, 47, 20);
+		transactionCost.setBounds(339, 102, 47, 20);
 		addMoney.add(transactionCost);
 		transactionCost.setColumns(10);
 		
@@ -764,41 +903,41 @@ public class Robo_advisor extends JFrame {
 		leftOver.setText("Remaining Money:");
 		leftOver.setEditable(false);
 		leftOver.setColumns(10);
-		leftOver.setBounds(367, 133, 111, 20);
+		leftOver.setBounds(339, 133, 111, 20);
 		addMoney.add(leftOver);
 		
 		leftMoney = new JTextField();
 		leftMoney.setEditable(false);
 		leftMoney.setColumns(10);
-		leftMoney.setBounds(370, 164, 47, 20);
+		leftMoney.setBounds(339, 164, 47, 20);
 		addMoney.add(leftMoney);
 		
 		sharesOne = new JTextField();
-		sharesOne.setBounds(346, 72, 15, 20);
+		sharesOne.setBounds(314, 72, 15, 20);
 		addMoney.add(sharesOne);
 		sharesOne.setColumns(10);
 		
 		sharesTwo = new JTextField();
 		sharesTwo.setColumns(10);
-		sharesTwo.setBounds(346, 102, 15, 20);
+		sharesTwo.setBounds(314, 102, 15, 20);
 		addMoney.add(sharesTwo);
 		
 		sharesThree = new JTextField();
 		sharesThree.setColumns(10);
-		sharesThree.setBounds(346, 133, 15, 20);
+		sharesThree.setBounds(314, 133, 15, 20);
 		addMoney.add(sharesThree);
 		
 		sharesFour = new JTextField();
 		sharesFour.setColumns(10);
-		sharesFour.setBounds(346, 164, 15, 20);
+		sharesFour.setBounds(314, 164, 15, 20);
 		addMoney.add(sharesFour);
 		
 		sharesFive = new JTextField();
 		sharesFive.setColumns(10);
-		sharesFive.setBounds(346, 195, 15, 20);
+		sharesFive.setBounds(314, 195, 15, 20);
 		addMoney.add(sharesFive);
 		JButton btnAddMoney = new JButton("Add Money");
-		btnAddMoney.setBounds(20, 280, 89, 23);
+		btnAddMoney.setBounds(20, 328, 89, 23);
 		btnAddMoney.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				ArrayList<JTextField> fundNameFields = new ArrayList<JTextField>();
@@ -826,7 +965,9 @@ public class Robo_advisor extends JFrame {
 						sharesThree.setText("0");
 						sharesFour.setText("0");
 						sharesFive.setText("0");
+						textCash.setText("0");
 				} catch (Exception exception) {
+					exception.printStackTrace();
 					contentPane.removeAll();
 					contentPane.add(Quiz);
 					setBounds(0,0,504,1000);
@@ -840,169 +981,474 @@ public class Robo_advisor extends JFrame {
 		home.add(btnAddMoney);
 		
 		totalMoneyOne = new JTextField();
-		totalMoneyOne.setBounds(273, 72, 48, 20);
+		totalMoneyOne.setBounds(349, 72, 51, 20);
 		totalMoneyOne.setText("0");
 		home.add(totalMoneyOne);
 		totalMoneyOne.setColumns(10);
 		
 		totalMoneyTwo = new JTextField();
-		totalMoneyTwo.setBounds(273, 103, 48, 20);
+		totalMoneyTwo.setBounds(349, 103, 51, 20);
 		totalMoneyTwo.setText("0");
 		totalMoneyTwo.setColumns(10);
 		home.add(totalMoneyTwo);
 		
 		totalMoneyThree = new JTextField();
-		totalMoneyThree.setBounds(273, 134, 48, 20);
+		totalMoneyThree.setBounds(349, 134, 51, 20);
 		totalMoneyThree.setText("0");
 		totalMoneyThree.setColumns(10);
 		home.add(totalMoneyThree);
 		
 		totalMoneyFour = new JTextField();
-		totalMoneyFour.setBounds(273, 165, 48, 20);
+		totalMoneyFour.setBounds(349, 165, 51, 20);
 		totalMoneyFour.setText("0");
 		totalMoneyFour.setColumns(10);
 		home.add(totalMoneyFour);
 		
 		totalMoneyFive = new JTextField();
-		totalMoneyFive.setBounds(273, 196, 48, 20);
+		totalMoneyFive.setBounds(349, 196, 51, 20);
 		totalMoneyFive.setText("0");
 		totalMoneyFive.setColumns(10);
 		home.add(totalMoneyFive);
 		
 		netWorth = new JTextField();
-		netWorth.setBounds(359, 249, 86, 20);
+		netWorth.setBounds(450, 249, 86, 20);
 		netWorth.setText("0");
 		netWorth.setColumns(10);
 		home.add(netWorth);
 		
 		txtNetWorth = new JTextField();
-		txtNetWorth.setBounds(259, 249, 86, 20);
+		txtNetWorth.setBounds(355, 249, 86, 20);
 		txtNetWorth.setEditable(false);
 		txtNetWorth.setText("Net Worth:");
 		home.add(txtNetWorth);
 		txtNetWorth.setColumns(10);
 		
 		indexOne = new JTextField();
-		indexOne.setBounds(331, 72, 33, 20);
+		indexOne.setBounds(410, 72, 33, 20);
 		indexOne.setText("fund");
 		home.add(indexOne);
 		indexOne.setColumns(10);
 		
 		indexTwo = new JTextField();
-		indexTwo.setBounds(331, 103, 33, 20);
+		indexTwo.setBounds(410, 103, 33, 20);
 		indexTwo.setText("fund");
 		indexTwo.setColumns(10);
 		home.add(indexTwo);
 		
 		indexThree = new JTextField();
-		indexThree.setBounds(331, 134, 33, 20);
+		indexThree.setBounds(410, 134, 33, 20);
 		indexThree.setText("fund");
 		indexThree.setColumns(10);
 		home.add(indexThree);
 		
 		indexFour = new JTextField();
-		indexFour.setBounds(331, 165, 33, 20);
+		indexFour.setBounds(410, 165, 33, 20);
 		indexFour.setText("fund");
 		indexFour.setColumns(10);
 		home.add(indexFour);
 		
 		indexFive = new JTextField();
-		indexFive.setBounds(331, 196, 33, 20);
+		indexFive.setBounds(410, 196, 33, 20);
 		indexFive.setText("fund");
 		indexFive.setColumns(10);
 		home.add(indexFive);
 		
 		txtPrice = new JTextField();
-		txtPrice.setBounds(374, 72, 33, 20);
+		txtPrice.setBounds(450, 72, 41, 20);
 		txtPrice.setText("price");
 		txtPrice.setColumns(10);
 		home.add(txtPrice);
 		
 		txtPrice_1 = new JTextField();
-		txtPrice_1.setBounds(374, 103, 33, 20);
+		txtPrice_1.setBounds(450, 103, 41, 20);
 		txtPrice_1.setText("price");
 		txtPrice_1.setColumns(10);
 		home.add(txtPrice_1);
 		
 		txtPrice_2 = new JTextField();
-		txtPrice_2.setBounds(374, 134, 33, 20);
+		txtPrice_2.setBounds(450, 134, 41, 20);
 		txtPrice_2.setText("price");
 		txtPrice_2.setColumns(10);
 		home.add(txtPrice_2);
 		
 		txtPrice_3 = new JTextField();
-		txtPrice_3.setBounds(374, 165, 33, 20);
+		txtPrice_3.setBounds(450, 165, 41, 20);
 		txtPrice_3.setText("price");
 		txtPrice_3.setColumns(10);
 		home.add(txtPrice_3);
 		
 		txtPrice_4 = new JTextField();
-		txtPrice_4.setBounds(374, 196, 33, 20);
+		txtPrice_4.setBounds(450, 196, 41, 20);
 		txtPrice_4.setText("price");
 		txtPrice_4.setColumns(10);
 		home.add(txtPrice_4);
 		
-		txtChange = new JTextField();
-		txtChange.setBounds(417, 72, 51, 20);
-		txtChange.setText("change");
-		txtChange.setColumns(10);
-		home.add(txtChange);
+		textChangeOne = new JTextField();
+		textChangeOne.setBounds(495, 72, 41, 20);
+		textChangeOne.setText("change");
+		textChangeOne.setColumns(10);
+		home.add(textChangeOne);
 		
-		textField = new JTextField();
-		textField.setBounds(417, 103, 51, 20);
-		textField.setText("change");
-		textField.setColumns(10);
-		home.add(textField);
+		textChangeTwo = new JTextField();
+		textChangeTwo.setBounds(495, 103, 41, 20);
+		textChangeTwo.setText("change");
+		textChangeTwo.setColumns(10);
+		home.add(textChangeTwo);
 		
-		textField_2 = new JTextField();
-		textField_2.setBounds(417, 134, 51, 20);
-		textField_2.setText("change");
-		textField_2.setColumns(10);
-		home.add(textField_2);
+		textChangeThree = new JTextField();
+		textChangeThree.setBounds(495, 134, 41, 20);
+		textChangeThree.setText("change");
+		textChangeThree.setColumns(10);
+		home.add(textChangeThree);
 		
-		textField_3 = new JTextField();
-		textField_3.setBounds(417, 165, 51, 20);
-		textField_3.setText("change");
-		textField_3.setColumns(10);
-		home.add(textField_3);
+		textChangeFour = new JTextField();
+		textChangeFour.setBounds(495, 165, 41, 20);
+		textChangeFour.setText("change");
+		textChangeFour.setColumns(10);
+		home.add(textChangeFour);
 		
-		textField_4 = new JTextField();
-		textField_4.setBounds(417, 196, 51, 20);
-		textField_4.setText("change");
-		textField_4.setColumns(10);
-		home.add(textField_4);
+		textChangeFive = new JTextField();
+		textChangeFive.setBounds(495, 196, 41, 20);
+		textChangeFive.setText("change");
+		textChangeFive.setColumns(10);
+		home.add(textChangeFive);
 		
 		shareNum = new JTextField();
 		shareNum.setText("0");
-		shareNum.setBounds(228, 72, 35, 20);
+		shareNum.setBounds(304, 72, 35, 20);
 		home.add(shareNum);
 		shareNum.setColumns(10);
 		
 		shareNum2 = new JTextField();
 		shareNum2.setText("0");
-		shareNum2.setBounds(228, 103, 35, 20);
+		shareNum2.setBounds(304, 103, 35, 20);
 		shareNum2.setColumns(10);
 		home.add(shareNum2);
 		
 		shareNum3 = new JTextField();
 		shareNum3.setText("0");
 		shareNum3.setColumns(10);
-		shareNum3.setBounds(228, 134, 35, 20);
+		shareNum3.setBounds(304, 134, 35, 20);
 		home.add(shareNum3);
 		
 		shareNum4 = new JTextField();
 		shareNum4.setText("0");
 		shareNum4.setColumns(10);
-		shareNum4.setBounds(228, 165, 35, 20);
+		shareNum4.setBounds(304, 165, 35, 20);
 		home.add(shareNum4);
 		
 		shareNum5 = new JTextField();
 		shareNum5.setText("0");
 		shareNum5.setColumns(10);
-		shareNum5.setBounds(228, 196, 35, 20);
+		shareNum5.setBounds(304, 196, 35, 20);
 		home.add(shareNum5);
 		
+		ArrayList<String> theseFunds = new ArrayList<String>();
+		if (people.get(choice.getSelectedItem()).getName()!=null) {
+			theseFunds = people.get(choice.getSelectedItem()).getRiskLevel().getFunds();
+		}
+		
+		theShares.addAll(Arrays.asList(indexOne,indexTwo,indexThree,indexFour,indexFive));
+		HashMap<String, Integer> fundsPrices = new HashMap<String,Integer>();
+		ArrayList<Integer> theSharesNumber = new ArrayList<Integer>();
+		ArrayList<JTextField> theSharesNumbers = new ArrayList<JTextField>();
+		theSharesNumbers.addAll(Arrays.asList(shareNum,shareNum2,shareNum3,shareNum4,shareNum5));
+		
+		txtCash = new JTextField();
+		txtCash.setEditable(false);
+		txtCash.setText("Cash: ");
+		txtCash.setBounds(355, 280, 86, 20);
+		home.add(txtCash);
+		txtCash.setColumns(10);
+		
+		textCash = new JTextField();
+		textCash.setText("0");
+		textCash.setColumns(10);
+		textCash.setBounds(450, 280, 86, 20);
+		home.add(textCash);
+		
+		
+		
+		
+	
+		fundsPrices =  people.get(choice.getSelectedItem()).getShares();
+		System.out.println(fundsPrices);
+		
+	for (int i = 0; i < theseFunds.size(); i++) {
+		theShares.get(i).setText(theseFunds.get(i));
 	}
+	for (int i = 0; i < theSharesNumbers.size(); i++) {
+		Integer temp = fundsPrices.get(theShares.get(i).getText());
+		System.out.println(temp);
+		if (people.get(choice.getSelectedItem()).getName()!=null) {
+			theSharesNumbers.get(i).setText(temp.toString());
+		}
+	}
+	
+	
+	
+	if (people.get(choice.getSelectedItem()).getName()!=null) {
+		
+		
+		double stockValue = 0;
+		ArrayList<String> symbols = people.get(choice.getSelectedItem()).getRiskLevel().getFunds();
+		ArrayList<Float> prices = new ArrayList<Float>();
+		ArrayList<Float> priceQuote = new ArrayList<Float>();
+		ArrayList<JTextField> alloftheShares = new ArrayList<JTextField>();
+		ArrayList<JTextField> etfPrice = new ArrayList<JTextField>();
+		ArrayList<JTextField> priceChange = new ArrayList<JTextField>();
+		ArrayList<JTextField> fundNamesTwo = new ArrayList<JTextField>();
+		ArrayList<JTextField> theMoneyBoxes = new ArrayList<JTextField>();
+		fundNamesTwo.addAll(Arrays.asList(indexOne,indexTwo,indexThree,indexFour,indexFive));
+		theMoneyBoxes.addAll(Arrays.asList(totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+		etfPrice.addAll(Arrays.asList(txtPrice,txtPrice_1,txtPrice_2,txtPrice_3,txtPrice_4));
+		alloftheShares.addAll(Arrays.asList(shareNum,shareNum2,shareNum3,shareNum4,shareNum5));
+		priceChange.addAll(Arrays.asList(textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive));
+		try {
+			for (int i = 0; i < symbols.size(); i++) {
+				values = GetRequest.sendGet(urlFoundation+symbols.get(i));
+				float sharePrice = Decode.getPrice(urlFoundation+symbols.get(i));
+				float shareChange = Decode.getChange(urlFoundation+symbols.get(i));
+				prices.add(sharePrice);
+				priceQuote.add(shareChange);
+			}
+			for (int i = 0; i < etfPrice.size(); i++) {
+				etfPrice.get(i).setText(prices.get(i).toString());
+				priceChange.get(i).setText(priceQuote.get(i).toString());
+				theMoneyBoxes.get(i).setText(String.valueOf(Float.parseFloat(etfPrice.get(i).getText())*Integer.parseInt(alloftheShares.get(i).getText())));
+				stockValue += Double.parseDouble(theMoneyBoxes.get(i).getText());
+			}
+			System.out.println(stockValue+people.get(choice.getSelectedItem()).getNetWorth());
+			if (people.get(choice.getSelectedItem()).getCash()==null) {
+				people.get(choice.getSelectedItem()).setCash(0.0);
+			}
+			netWorth.setText(String.valueOf(stockValue+people.get(choice.getSelectedItem()).getCash()));
+			textCash.setText(String.valueOf(people.get(choice.getSelectedItem()).getCash()));
+		} catch (Exception e1) {
+			
+			e1.printStackTrace();
+		}		
+
+		
+		DefaultPieDataset dataset = new DefaultPieDataset( );
+		for (int i = 0; i < etfPrice.size(); i++) {
+			
+			dataset.setValue(fundNamesTwo.get(i).getText(), new Double(Double.parseDouble(theMoneyBoxes.get(i).getText())));
+		}
+		System.out.println(dataset);
+	    JFreeChart chart = ChartFactory.createPieChart3D(      
+	            "Asset Distribution",   
+	            dataset,            
+	            true,             
+	            true, 
+	            false);
+	   
+	    PiePlot3D plot = (PiePlot3D) chart.getPlot();
+	    plot.setStartAngle(290);
+	    plot.setDirection(Rotation.CLOCKWISE);
+	    plot.setForegroundAlpha(0.5f);
+	    plot.setNoDataMessage("No data to display");
+		ChartPanel pie = new ChartPanel(chart);
+		tryThis.add(pie);
+		pie.setBounds(0, 0, 293, 272);
+		
+		
+		}
+	
+	
+	
+	
+	
+	
+	
+	class ItemChangeListener implements ItemListener{
+		
+	    @Override
+	    public void itemStateChanged(ItemEvent event) {
+	       if (event.getStateChange() == ItemEvent.SELECTED) {
+	 
+	          Object item = event.getItem();
+	          System.out.println(item.toString());
+	          ArrayList<String> theseFunds = new ArrayList<String>();
+	  		if (people.get(choice.getSelectedItem()).getName()!=null&&people.get(choice.getSelectedItem()).getRiskLevel()!=null) {
+	  			theseFunds = people.get(choice.getSelectedItem()).getRiskLevel().getFunds();
+	  		}
+	  	
+	  		theShares.addAll(Arrays.asList(indexOne,indexTwo,indexThree,indexFour,indexFive));
+	  		HashMap<String, Integer> fundsPrices = new HashMap<String,Integer>();
+	  		ArrayList<Integer> theSharesNumber = new ArrayList<Integer>();
+	  		ArrayList<JTextField> theSharesNumbers = new ArrayList<JTextField>();
+	  		theSharesNumbers.addAll(Arrays.asList(shareNum,shareNum2,shareNum3,shareNum4,shareNum5));
+	  		fundsPrices =  people.get(choice.getSelectedItem()).getShares();
+	  		System.out.println(fundsPrices);
+	  	for (int i = 0; i < theseFunds.size(); i++) {
+	  		theShares.get(i).setText(theseFunds.get(i));
+	  	}
+	  	for (int i = 0; i < theSharesNumbers.size(); i++) {
+	  		Integer temp = fundsPrices.get(theShares.get(i).getText());
+	  		System.out.println(temp);
+	  		if (people.get(choice.getSelectedItem()).getName()!=null&&people.get(choice.getSelectedItem()).getRiskLevel()!=null) {
+	  			theSharesNumbers.get(i).setText(temp.toString());
+	  		}
+	  		
+	  		
+	  	}
+	  	
+	  	
+	  	//put the prices
+	  	if (people.get(choice.getSelectedItem()).getName()!=null&&people.get(choice.getSelectedItem()).getRiskLevel()!=null) {
+			
+	  		
+	  		double stockValue = 0;
+	  		ArrayList<String> symbols = people.get(choice.getSelectedItem()).getRiskLevel().getFunds();
+	  		ArrayList<Float> prices = new ArrayList<Float>();
+	  		ArrayList<Float> priceQuote = new ArrayList<Float>();
+	  		ArrayList<JTextField> alloftheShares = new ArrayList<JTextField>();
+	  		ArrayList<JTextField> etfPrice = new ArrayList<JTextField>();
+	  		ArrayList<JTextField> priceChange = new ArrayList<JTextField>();
+	  		ArrayList<JTextField> theMoneyBoxes = new ArrayList<JTextField>();
+	  		theMoneyBoxes.addAll(Arrays.asList(totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+	  		etfPrice.addAll(Arrays.asList(txtPrice,txtPrice_1,txtPrice_2,txtPrice_3,txtPrice_4));
+	  		alloftheShares.addAll(Arrays.asList(shareNum,shareNum2,shareNum3,shareNum4,shareNum5));
+	  		priceChange.addAll(Arrays.asList(textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive));
+	  		ArrayList<JTextField> allHomeFields = new ArrayList<JTextField>();
+	  		
+	  		ArrayList<JTextField> homeFields = new ArrayList<JTextField>();
+			homeFields.addAll(Arrays.asList(textCash, netWorth, textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive,shareNum,shareNum2,shareNum3,shareNum4,shareNum5,txtPrice,txtPrice_1,txtPrice_2,txtPrice_3,txtPrice_4,totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+			for (int j = 0; j < homeFields.size(); j++) {
+				homeFields.get(j).setText(df.format(Double.parseDouble(homeFields.get(j).getText())));
+			}
+	  		
+	  		try {
+	  			for (int i = 0; i < symbols.size(); i++) {
+	  				String values = GetRequest.sendGet(urlFoundation+symbols.get(i));
+	  				float sharePrice = Decode.getPrice(urlFoundation+symbols.get(i));
+	  				float shareChange = Decode.getChange(urlFoundation+symbols.get(i));
+	  				prices.add(sharePrice);
+	  				priceQuote.add(shareChange);
+	  			}
+	  			for (int i = 0; i < etfPrice.size(); i++) {
+	  				etfPrice.get(i).setText(prices.get(i).toString());
+	  				priceChange.get(i).setText(priceQuote.get(i).toString());
+	  				theMoneyBoxes.get(i).setText(String.valueOf(Float.parseFloat(etfPrice.get(i).getText())*Integer.parseInt(alloftheShares.get(i).getText())));
+	  				stockValue += Double.parseDouble(theMoneyBoxes.get(i).getText());
+	  			}
+	  			System.out.println(stockValue+people.get(choice.getSelectedItem()).getNetWorth());
+	  			if (people.get(choice.getSelectedItem()).getCash()==null) {
+	  				people.get(choice.getSelectedItem()).setCash(0.0);
+	  			}
+	  			netWorth.setText(String.valueOf(stockValue+people.get(choice.getSelectedItem()).getCash()));
+	  		} catch (Exception e1) {
+	  			
+	  			e1.printStackTrace();
+	  		}			
+	  		
+	  		
+	  		df.format(Double.parseDouble(netWorth.getText()));
+	  		
+	  		
+	  		
+	  		
+	  		
+	  		
+	  		
+	  		
+	  		
+	  		
+	  		ArrayList<JTextField> fundNamesTwo = new ArrayList<JTextField>();
+			ArrayList<JTextField> theMoneyBoxesTwo = new ArrayList<JTextField>();
+			fundNamesTwo.addAll(Arrays.asList(indexOne,indexTwo,indexThree,indexFour,indexFive));
+			theMoneyBoxesTwo.addAll(Arrays.asList(totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+			
+			tryThis.removeAll();
+			tryThis.setVisible(false);
+			DefaultPieDataset dataset = new DefaultPieDataset( );
+			for (int i = 0; i < theMoneyBoxes.size(); i++) {
+				dataset.setValue(fundNamesTwo.get(i).getText(), new Double(Double.parseDouble(theMoneyBoxesTwo.get(i).getText())));
+			}
+			
+		    JFreeChart chart = ChartFactory.createPieChart3D(      
+		            "Asset Distribution",   
+		            dataset,            
+		            true,             
+		            true, 
+		            false);
+		    
+		    PiePlot3D plot = (PiePlot3D) chart.getPlot();
+		    plot.setStartAngle(290);
+		    plot.setDirection(Rotation.CLOCKWISE);
+		    plot.setForegroundAlpha(0.5f);
+		    plot.setNoDataMessage("No data to display");
+			ChartPanel pie = new ChartPanel(chart);
+			pie.setBounds(0, 0, 293, 272);
+			tryThis.add(pie);
+			tryThis.setVisible(true);
+			
+			contentPane.removeAll();
+			contentPane.add(home);
+			home.setVisible(true);
+	  		
+	  		for (int i = 0; i < priceChange.size(); i++) {
+				if (Double.parseDouble(priceChange.get(i).getText())<0) {
+					priceChange.get(i).setForeground(Color.RED);
+				}
+				else {
+					priceChange.get(i).setForeground(Color.GREEN);
+				}
+				
+			}
+	  		
+	  		
+	  		
+	  		
+	  		}
+	  		ArrayList<JTextField> homeFields = new ArrayList<JTextField>();
+	  		homeFields.addAll(Arrays.asList(textCash, netWorth, indexOne, indexTwo, indexThree, indexFour, indexFive, textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive,shareNum,shareNum2,shareNum3,shareNum4,shareNum5,txtPrice,txtPrice_1,txtPrice_2,txtPrice_3,txtPrice_4,totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+	  		if (people.get(choice.getSelectedItem()).getName()==null||people.get(choice.getSelectedItem()).getRiskLevel()==null) {
+				for (int i = 0; i < homeFields.size(); i++) {
+					homeFields.get(i).setText("0");
+				}
+			}
+	       }
+	       
+	      
+	   
+	    }     
+	    
+	}
+	//get the prices of those securities and display the value
+	if (people.get(choice.getSelectedItem()).getName()!=null&&people.get(choice.getSelectedItem()).getRiskLevel()!=null) {
+	ArrayList<JTextField> redGreen = new ArrayList<JTextField>();
+	
+		redGreen.addAll(Arrays.asList(textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive));
+		ArrayList<JTextField> homeFields = new ArrayList<JTextField>();
+		homeFields.addAll(Arrays.asList(textCash, netWorth, textChangeOne,textChangeTwo,textChangeThree,textChangeFour,textChangeFive,shareNum,shareNum2,shareNum3,shareNum4,shareNum5,txtPrice,txtPrice_1,txtPrice_2,txtPrice_3,txtPrice_4,totalMoneyOne,totalMoneyTwo,totalMoneyThree,totalMoneyFour,totalMoneyFive));
+		for (int j = 0; j < homeFields.size(); j++) {
+			homeFields.get(j).setText(df.format(Double.parseDouble(homeFields.get(j).getText())));
+		}
+		for (int i = 0; i < redGreen.size(); i++) {
+		if (Double.parseDouble(redGreen.get(i).getText())<0) {
+			redGreen.get(i).setForeground(Color.RED);
+		}
+		else {
+			redGreen.get(i).setForeground(Color.GREEN);
+		}
+	
+		
+	}
+	
+      
+	}
+	choice.addItemListener(new ItemChangeListener());
+	
+	
+	
+
+	}
+	//end
+	
+	
+	
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {

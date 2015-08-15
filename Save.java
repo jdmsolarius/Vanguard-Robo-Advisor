@@ -26,7 +26,7 @@ public class Save {
 		FileInputStream fis = new FileInputStream("people.ser");
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		){
-			thesePeople = ((ArrayList<Person>) ois.readObject());
+			thesePeople = (ArrayList<Person>) ois.readObject();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

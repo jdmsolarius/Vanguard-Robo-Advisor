@@ -1,15 +1,15 @@
 package robo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class riskProfiles {
+public class riskProfiles implements Serializable{
 	ArrayList<String> funds = new ArrayList<String>();
 	ArrayList<Double> ratio = new ArrayList<Double>();
 	HashMap<String, Double> fundRatio = new HashMap<String, Double>();
 public riskProfiles(Integer score) {
-
 		if (score<10) {
 			funds.addAll(Arrays.asList("VOO", "BSV","MGC","VTIP","VTI"));
 			ratio.addAll(Arrays.asList(0.1,0.2,0.2,0.3,0.2));

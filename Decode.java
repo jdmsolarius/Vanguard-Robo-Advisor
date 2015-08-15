@@ -19,7 +19,7 @@ public class Decode {
 	        System.out.println(array.get(0));
 			
 	        JSONObject jsonObject2 = (JSONObject)array.get(0);
-	        price = Float.parseFloat(jsonObject2.get("pcls_fix").toString());
+	        price = Float.parseFloat(jsonObject2.get("l_fix").toString());
 	  	  
 	  	  
 		return price;

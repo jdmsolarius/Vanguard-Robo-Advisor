@@ -14,7 +14,8 @@ public class Person implements Serializable{
 	private String email;
 	private int riskProfile;
 	private riskProfiles riskLevel = null;
-	private Double netWorth;
+	private Double netWorth = 0.0;
+	private Double cash;
 	private HashMap<String, Integer> shares = new HashMap<String, Integer>();
 
 	public Person() {
@@ -66,6 +67,14 @@ public class Person implements Serializable{
 
 	public void setShares(HashMap<String, Integer> shares) {
 		this.shares = shares;
+	}
+
+	public Double getCash() {
+		return cash;
+	}
+
+	public void setCash(Double cash) {
+		this.cash = cash;
 	}
 }
 
